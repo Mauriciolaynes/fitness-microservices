@@ -1,0 +1,46 @@
+{
+  "realm": "fitness-realm",
+  "enabled": true,
+  "clients": [
+    {
+      "clientId": "fitness-client",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "fitness-client-secret",
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": true,
+      "serviceAccountsEnabled": true,
+      "redirectUris": ["*"],
+      "webOrigins": ["*"]
+    }
+  ],
+  "roles": {
+    "realm": [
+      { "name": "ADMIN" },
+      { "name": "USUARIO" }
+    ]
+  },
+  "users": [
+    {
+      "username": "admin",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "admin@fitness.com",
+      "credentials": [
+        { "type": "password", "value": "admin123", "temporary": false }
+      ],
+      "realmRoles": ["ADMIN", "USUARIO"]
+    },
+    {
+      "username": "usuario1",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "usuario1@fitness.com",
+      "credentials": [
+        { "type": "password", "value": "usuario123", "temporary": false }
+      ],
+      "realmRoles": ["USUARIO"]
+    }
+  ]
+}

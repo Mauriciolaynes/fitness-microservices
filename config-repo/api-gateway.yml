@@ -1,0 +1,36 @@
+server:
+  port: 8080
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/realms/fitness-realm
+
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: usuario-service
+          uri: lb://usuario-service
+          predicates:
+            - Path=/api/usuarios/**,/api/membresias/**
+        - id: rutina-service
+          uri: lb://rutina-service
+          predicates:
+            - Path=/api/rutinas/**,/api/ejercicios-rutina/**
+        - id: progreso-service
+          uri: lb://progreso-service
+          predicates:
+            - Path=/api/progresos/**
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
