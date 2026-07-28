@@ -10,5 +10,6 @@ public interface RutinaService {
     RutinaDTO obtenerPorId(Integer id);
     List<RutinaDTO> listar();
     List<RutinaDTO> listarPorUsuario(Integer idUsuario);
+    boolean existe(Integer id);
     void eliminar(Integer id);
 }

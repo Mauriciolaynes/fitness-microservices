@@ -29,8 +29,6 @@ services:
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
-      # Fuerza a que el "iss" (issuer) de los tokens sea siempre localhost:8180,
-      # que es como Postman y el navegador acceden a Keycloak desde fuera de Docker.
       KC_HOSTNAME: localhost
       KC_HOSTNAME_PORT: "8180"
       KC_HOSTNAME_STRICT_HTTPS: "false"
@@ -92,6 +90,28 @@ services:
     networks:
       - fitness-net
 
+  membresia-service:
+    build:
+      context: .
+      dockerfile: membresia-service/Dockerfile
+    container_name: fitness-membresia-service
+    restart: unless-stopped
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/membresia_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:8180/realms/fitness-realm
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/fitness-realm/protocol/openid-connect/certs
+    depends_on:
+      mysql:
+        condition: service_healthy
+      usuario-service:
+        condition: service_started
+    networks:
+      - fitness-net
+
   rutina-service:
     build:
       context: .
@@ -110,6 +130,28 @@ services:
       mysql:
         condition: service_healthy
       usuario-service:
+        condition: service_started
+    networks:
+      - fitness-net
+
+  ejercicio-rutina-service:
+    build:
+      context: .
+      dockerfile: ejercicio-rutina-service/Dockerfile
+    container_name: fitness-ejercicio-rutina-service
+    restart: unless-stopped
+    ports:
+      - "8085:8085"
+    environment:
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ejercicio_rutina_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:8180/realms/fitness-realm
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/fitness-realm/protocol/openid-connect/certs
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rutina-service:
         condition: service_started
     networks:
       - fitness-net
@@ -136,6 +178,28 @@ services:
     networks:
       - fitness-net
 
+  nutricion-service:
+    build:
+      context: .
+      dockerfile: nutricion-service/Dockerfile
+    container_name: fitness-nutricion-service
+    restart: unless-stopped
+    ports:
+      - "8086:8086"
+    environment:
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/nutricion_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:8180/realms/fitness-realm
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/fitness-realm/protocol/openid-connect/certs
+    depends_on:
+      mysql:
+        condition: service_healthy
+      usuario-service:
+        condition: service_started
+    networks:
+      - fitness-net
+
   api-gateway:
     build:
       context: .
@@ -150,8 +214,11 @@ services:
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/fitness-realm/protocol/openid-connect/certs
     depends_on:
       - usuario-service
+      - membresia-service
       - rutina-service
+      - ejercicio-rutina-service
       - progreso-service
+      - nutricion-service
     networks:
       - fitness-net
 

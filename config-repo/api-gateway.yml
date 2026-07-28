@@ -18,15 +18,27 @@ spring:
         - id: usuario-service
           uri: lb://usuario-service
           predicates:
-            - Path=/api/usuarios/**,/api/membresias/**
+            - Path=/api/usuarios/**
+        - id: membresia-service
+          uri: lb://membresia-service
+          predicates:
+            - Path=/api/membresias/**
         - id: rutina-service
           uri: lb://rutina-service
           predicates:
-            - Path=/api/rutinas/**,/api/ejercicios-rutina/**
+            - Path=/api/rutinas/**
+        - id: ejercicio-rutina-service
+          uri: lb://ejercicio-rutina-service
+          predicates:
+            - Path=/api/ejercicios-rutina/**
         - id: progreso-service
           uri: lb://progreso-service
           predicates:
             - Path=/api/progresos/**
+        - id: nutricion-service
+          uri: lb://nutricion-service
+          predicates:
+            - Path=/api/nutriciones/**
 
 eureka:
   client:

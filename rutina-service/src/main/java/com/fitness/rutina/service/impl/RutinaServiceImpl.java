@@ -65,6 +65,12 @@ public class RutinaServiceImpl implements RutinaService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public boolean existe(Integer id) {
+        return rutinaRepository.existsById(id);
+    }
+
+    @Override
     public void eliminar(Integer id) {
         if (!rutinaRepository.existsById(id)) {
             throw new EntityNotFoundException("Rutina no encontrada con id: " + id);

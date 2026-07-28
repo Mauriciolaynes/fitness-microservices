@@ -16,8 +16,11 @@
         <module>config-server</module>
         <module>api-gateway</module>
         <module>usuario-service</module>
+        <module>membresia-service</module>
         <module>rutina-service</module>
+        <module>ejercicio-rutina-service</module>
         <module>progreso-service</module>
+        <module>nutricion-service</module>
     </modules>
 
     <properties>

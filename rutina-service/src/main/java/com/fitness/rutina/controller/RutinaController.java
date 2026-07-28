@@ -50,6 +50,12 @@ public class RutinaController {
         return ResponseEntity.ok(rutinaService.listarPorUsuario(idUsuario));
     }
 
+    @Operation(summary = "Verificar existencia de una rutina (uso interno)")
+    @GetMapping("/{id}/existe")
+    public ResponseEntity<Boolean> existe(@PathVariable Integer id) {
+        return ResponseEntity.ok(rutinaService.existe(id));
+    }
+
     @Operation(summary = "Eliminar una rutina")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
