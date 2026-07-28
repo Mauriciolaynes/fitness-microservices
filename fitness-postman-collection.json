@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "e2ba8475-7b56-4b8c-986c-dfc588523c9a",
 		"name": "Fitness Microservices System (6 Services)",
-		"description": "Collection for testing the complete Fitness Microservices System with 6 business services and Keycloak OAuth2 security through the API Gateway.",
+		"description": "Collection for testing the complete Fitness Microservices System with 6 business services and Keycloak OAuth2 security through the API Gateway.\n\n**ORDEN DE EJECUCIÓN:**\n1. Get Token → guarda jwt_token automáticamente\n2. Crear Usuario → devuelve idUsuario (usar en siguientes requests)\n3. Crear Membresía → requiere idUsuario válido\n4. Crear Rutina → requiere idUsuario válido\n5. Asignar Ejercicio → requiere idRutina válido\n6. Registrar Progreso → requiere idUsuario válido\n7. Registrar Nutrición → requiere idUsuario válido",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -16,7 +16,9 @@
 							"var jsonData = pm.response.json();",
 							"if (jsonData.access_token) {",
 							"    pm.collectionVariables.set(\"jwt_token\", jsonData.access_token);",
-							"    console.log(\"JWT Token guardado en variables de colección.\");",
+							"    console.log(\"✅ JWT Token guardado correctamente.\");",
+							"} else {",
+							"    console.log(\"❌ No se obtuvo token. Verifica credenciales.\");",
 							"}"
 						],
 						"type": "text/javascript"
@@ -59,56 +61,63 @@
 				"url": {
 					"raw": "http://localhost:8180/realms/fitness-realm/protocol/openid-connect/token",
 					"protocol": "http",
-					"host": [
-						"localhost"
-					],
+					"host": ["localhost"],
 					"port": "8180",
-					"path": [
-						"realms",
-						"fitness-realm",
-						"protocol",
-						"openid-connect",
-						"token"
-					]
+					"path": ["realms", "fitness-realm", "protocol", "openid-connect", "token"]
 				}
 			},
 			"response": []
 		},
 		{
 			"name": "2. Usuario - Crear Usuario",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();",
+							"if (jsonData.idUsuario) {",
+							"    pm.collectionVariables.set(\"usuario_id\", jsonData.idUsuario);",
+							"    console.log(\"✅ Usuario creado con id: \" + jsonData.idUsuario);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"auth": {
 					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{jwt_token}}",
-							"type": "string"
-						}
-					]
+					"bearer": [{"key": "token", "value": "{{jwt_token}}", "type": "string"}]
 				},
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"nombre\": \"Carlos Mendoza\",\n  \"email\": \"carlos.m@mail.com\",\n  \"telefono\": \"987654321\",\n  \"fechaRegistro\": \"2026-07-27\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
+					"raw": "{\n  \"nombres\": \"Carlos\",\n  \"apellidos\": \"Laynes\",\n  \"correo\": \"carlos.laynes@mail.com\",\n  \"dni\": \"12345678\",\n  \"password\": \"pass1234\",\n  \"telefono\": \"987654321\",\n  \"rol\": \"USER\"\n}",
+					"options": {"raw": {"language": "json"}}
 				},
 				"url": {
 					"raw": "http://localhost:8080/api/usuarios",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"api",
-						"usuarios"
-					]
+					"protocol": "http", "host": ["localhost"], "port": "8080",
+					"path": ["api", "usuarios"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "2b. Usuario - Listar Usuarios",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [{"key": "token", "value": "{{jwt_token}}", "type": "string"}]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/usuarios",
+					"protocol": "http", "host": ["localhost"], "port": "8080",
+					"path": ["api", "usuarios"]
 				}
 			},
 			"response": []
@@ -118,75 +127,90 @@
 			"request": {
 				"auth": {
 					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{jwt_token}}",
-							"type": "string"
-						}
-					]
+					"bearer": [{"key": "token", "value": "{{jwt_token}}", "type": "string"}]
 				},
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"idUsuario\": 1,\n  \"plan\": \"Premium Anual\",\n  \"costo\": 350.00,\n  \"inicio\": \"2026-07-27\",\n  \"fin\": \"2027-07-27\",\n  \"estado\": \"Activo\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
+					"raw": "{\n  \"idUsuario\": {{usuario_id}},\n  \"plan\": \"Premium Anual\",\n  \"costo\": 350.00,\n  \"inicio\": \"2026-07-27\",\n  \"fin\": \"2027-07-27\",\n  \"estado\": \"Activo\"\n}",
+					"options": {"raw": {"language": "json"}}
 				},
 				"url": {
 					"raw": "http://localhost:8080/api/membresias",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"api",
-						"membresias"
-					]
+					"protocol": "http", "host": ["localhost"], "port": "8080",
+					"path": ["api", "membresias"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "3b. Membresia - Listar Membresias",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [{"key": "token", "value": "{{jwt_token}}", "type": "string"}]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/membresias",
+					"protocol": "http", "host": ["localhost"], "port": "8080",
+					"path": ["api", "membresias"]
 				}
 			},
 			"response": []
 		},
 		{
 			"name": "4. Rutina - Crear Rutina",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();",
+							"if (jsonData.idRutina) {",
+							"    pm.collectionVariables.set(\"rutina_id\", jsonData.idRutina);",
+							"    console.log(\"✅ Rutina creada con id: \" + jsonData.idRutina);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"auth": {
 					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{jwt_token}}",
-							"type": "string"
-						}
-					]
+					"bearer": [{"key": "token", "value": "{{jwt_token}}", "type": "string"}]
 				},
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"nombreRutina\": \"Rutina Hipertrofia Pecho/Triceps\",\n  \"idUsuario\": 1\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
+					"raw": "{\n  \"nombreRutina\": \"Rutina Hipertrofia Pecho/Triceps\",\n  \"idUsuario\": {{usuario_id}}\n}",
+					"options": {"raw": {"language": "json"}}
 				},
 				"url": {
 					"raw": "http://localhost:8080/api/rutinas",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"api",
-						"rutinas"
-					]
+					"protocol": "http", "host": ["localhost"], "port": "8080",
+					"path": ["api", "rutinas"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "4b. Rutina - Listar Rutinas",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [{"key": "token", "value": "{{jwt_token}}", "type": "string"}]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/rutinas",
+					"protocol": "http", "host": ["localhost"], "port": "8080",
+					"path": ["api", "rutinas"]
 				}
 			},
 			"response": []
@@ -196,36 +220,36 @@
 			"request": {
 				"auth": {
 					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{jwt_token}}",
-							"type": "string"
-						}
-					]
+					"bearer": [{"key": "token", "value": "{{jwt_token}}", "type": "string"}]
 				},
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"nombre\": \"Press de Banca Plano\",\n  \"series\": 4,\n  \"idRutina\": 1\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
+					"raw": "{\n  \"nombre\": \"Press de Banca Plano\",\n  \"series\": 4,\n  \"idRutina\": {{rutina_id}}\n}",
+					"options": {"raw": {"language": "json"}}
 				},
 				"url": {
 					"raw": "http://localhost:8080/api/ejercicios-rutina",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"api",
-						"ejercicios-rutina"
-					]
+					"protocol": "http", "host": ["localhost"], "port": "8080",
+					"path": ["api", "ejercicios-rutina"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "5b. Ejercicio - Listar Ejercicios",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [{"key": "token", "value": "{{jwt_token}}", "type": "string"}]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/ejercicios-rutina",
+					"protocol": "http", "host": ["localhost"], "port": "8080",
+					"path": ["api", "ejercicios-rutina"]
 				}
 			},
 			"response": []
@@ -235,36 +259,36 @@
 			"request": {
 				"auth": {
 					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{jwt_token}}",
-							"type": "string"
-						}
-					]
+					"bearer": [{"key": "token", "value": "{{jwt_token}}", "type": "string"}]
 				},
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"idUsuario\": 1,\n  \"fechaRegistro\": \"2026-07-27\",\n  \"peso\": 78.50,\n  \"porcentajeGrasa\": 15.4,\n  \"porcentajeMusculo\": 42.1\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
+					"raw": "{\n  \"idUsuario\": {{usuario_id}},\n  \"fechaRegistro\": \"2026-07-27\",\n  \"peso\": 78.50,\n  \"porcentajeGrasa\": 15.4,\n  \"porcentajeMusculo\": 42.1\n}",
+					"options": {"raw": {"language": "json"}}
 				},
 				"url": {
 					"raw": "http://localhost:8080/api/progresos",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"api",
-						"progresos"
-					]
+					"protocol": "http", "host": ["localhost"], "port": "8080",
+					"path": ["api", "progresos"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "6b. Progreso - Listar Progresos",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [{"key": "token", "value": "{{jwt_token}}", "type": "string"}]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/progresos",
+					"protocol": "http", "host": ["localhost"], "port": "8080",
+					"path": ["api", "progresos"]
 				}
 			},
 			"response": []
@@ -274,36 +298,36 @@
 			"request": {
 				"auth": {
 					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{jwt_token}}",
-							"type": "string"
-						}
-					]
+					"bearer": [{"key": "token", "value": "{{jwt_token}}", "type": "string"}]
 				},
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"planDetalle\": \"Plan Proteico de Volumen\",\n  \"caloriasDiarias\": 2900,\n  \"objetivo\": \"Aumento de masa muscular\",\n  \"idUsuario\": 1\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
+					"raw": "{\n  \"planDetalle\": \"Plan Proteico de Volumen\",\n  \"caloriasDiarias\": 2900,\n  \"objetivo\": \"Aumento de masa muscular\",\n  \"idUsuario\": {{usuario_id}}\n}",
+					"options": {"raw": {"language": "json"}}
 				},
 				"url": {
 					"raw": "http://localhost:8080/api/nutriciones",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"api",
-						"nutriciones"
-					]
+					"protocol": "http", "host": ["localhost"], "port": "8080",
+					"path": ["api", "nutriciones"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "7b. Nutricion - Listar Planes",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [{"key": "token", "value": "{{jwt_token}}", "type": "string"}]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/nutriciones",
+					"protocol": "http", "host": ["localhost"], "port": "8080",
+					"path": ["api", "nutriciones"]
 				}
 			},
 			"response": []
@@ -313,6 +337,16 @@
 		{
 			"key": "jwt_token",
 			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "usuario_id",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "rutina_id",
+			"value": "1",
 			"type": "string"
 		}
 	]

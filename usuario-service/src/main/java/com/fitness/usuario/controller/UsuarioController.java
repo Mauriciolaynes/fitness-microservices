@@ -46,8 +46,9 @@ public class UsuarioController {
 
     @Operation(summary = "Verificar existencia de un usuario (uso interno entre microservicios)")
     @GetMapping("/{id}/existe")
-    public ResponseEntity<Boolean> existe(@PathVariable Integer id) {
-        return ResponseEntity.ok(usuarioService.existe(id));
+    @ResponseStatus(HttpStatus.OK)
+    public Boolean existe(@PathVariable("id") Integer id) {
+        return usuarioService.existe(id);
     }
 
     @Operation(summary = "Eliminar un usuario")

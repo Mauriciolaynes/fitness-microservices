@@ -2,16 +2,38 @@ package com.fitness.nutricion.mapper;
 
 import com.fitness.nutricion.dto.NutricionDTO;
 import com.fitness.nutricion.entity.Nutricion;
-import org.mapstruct.Mapper;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring")
-public interface NutricionMapper {
+@Component
+public class NutricionMapper {
 
-    NutricionDTO toDTO(Nutricion entity);
+    public NutricionDTO toDTO(Nutricion entity) {
+        if (entity == null) return null;
+        NutricionDTO dto = new NutricionDTO();
+        dto.setId(entity.getId());
+        dto.setPlanDetalle(entity.getPlanDetalle());
+        dto.setCaloriasDiarias(entity.getCaloriasDiarias());
+        dto.setObjetivo(entity.getObjetivo());
+        dto.setIdUsuario(entity.getIdUsuario());
+        return dto;
+    }
 
-    Nutricion toEntity(NutricionDTO dto);
+    public Nutricion toEntity(NutricionDTO dto) {
+        if (dto == null) return null;
+        Nutricion entity = new Nutricion();
+        entity.setId(dto.getId());
+        entity.setPlanDetalle(dto.getPlanDetalle());
+        entity.setCaloriasDiarias(dto.getCaloriasDiarias());
+        entity.setObjetivo(dto.getObjetivo());
+        entity.setIdUsuario(dto.getIdUsuario());
+        return entity;
+    }
 
-    List<NutricionDTO> toDTOList(List<Nutricion> entities);
+    public List<NutricionDTO> toDTOList(List<Nutricion> entities) {
+        if (entities == null) return List.of();
+        return entities.stream().map(this::toDTO).collect(Collectors.toList());
+    }
 }

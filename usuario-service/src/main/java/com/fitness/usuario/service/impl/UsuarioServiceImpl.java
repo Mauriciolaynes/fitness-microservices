@@ -5,6 +5,7 @@ import com.fitness.usuario.entity.Usuario;
 import com.fitness.usuario.mapper.UsuarioMapper;
 import com.fitness.usuario.repository.UsuarioRepository;
 import com.fitness.usuario.service.UsuarioService;
+import com.fitness.usuario.exception.UsuarioNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,7 +32,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public UsuarioDTO actualizar(Integer id, UsuarioDTO dto) {
         Usuario existente = usuarioRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con id: " + id));
+                .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado con id: " + id));
 
         existente.setNombres(dto.getNombres());
         existente.setApellidos(dto.getApellidos());
@@ -48,7 +49,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Transactional(readOnly = true)
     public UsuarioDTO obtenerPorId(Integer id) {
         Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con id: " + id));
+                .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado con id: " + id));
         return usuarioMapper.toDTO(usuario);
     }
 
@@ -61,7 +62,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public void eliminar(Integer id) {
         if (!usuarioRepository.existsById(id)) {
-            throw new EntityNotFoundException("Usuario no encontrado con id: " + id);
+            throw new UsuarioNotFoundException("Usuario no encontrado con id: " + id);
         }
         usuarioRepository.deleteById(id);
     }

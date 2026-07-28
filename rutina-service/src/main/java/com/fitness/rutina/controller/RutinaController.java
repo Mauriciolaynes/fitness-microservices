@@ -52,7 +52,7 @@ public class RutinaController {
 
     @Operation(summary = "Verificar existencia de una rutina (uso interno)")
     @GetMapping("/{id}/existe")
-    public ResponseEntity<Boolean> existe(@PathVariable Integer id) {
+    public ResponseEntity<Boolean> existe(@PathVariable("id") Integer id) {
         return ResponseEntity.ok(rutinaService.existe(id));
     }
 

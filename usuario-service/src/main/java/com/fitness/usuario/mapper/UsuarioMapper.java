@@ -2,19 +2,44 @@ package com.fitness.usuario.mapper;
 
 import com.fitness.usuario.dto.UsuarioDTO;
 import com.fitness.usuario.entity.Usuario;
-import org.mapstruct.Mapper;
-import org.mapstruct.factory.Mappers;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring")
-public interface UsuarioMapper {
+@Component
+public class UsuarioMapper {
 
-    UsuarioMapper INSTANCE = Mappers.getMapper(UsuarioMapper.class);
+    public UsuarioDTO toDTO(Usuario entity) {
+        if (entity == null) return null;
+        UsuarioDTO dto = new UsuarioDTO();
+        dto.setIdUsuario(entity.getIdUsuario());
+        dto.setNombres(entity.getNombres());
+        dto.setApellidos(entity.getApellidos());
+        dto.setCorreo(entity.getCorreo());
+        dto.setDni(entity.getDni());
+        dto.setPassword(entity.getPassword());
+        dto.setRol(entity.getRol());
+        dto.setTelefono(entity.getTelefono());
+        return dto;
+    }
 
-    UsuarioDTO toDTO(Usuario usuario);
+    public Usuario toEntity(UsuarioDTO dto) {
+        if (dto == null) return null;
+        Usuario entity = new Usuario();
+        entity.setIdUsuario(dto.getIdUsuario());
+        entity.setNombres(dto.getNombres());
+        entity.setApellidos(dto.getApellidos());
+        entity.setCorreo(dto.getCorreo());
+        entity.setDni(dto.getDni());
+        entity.setPassword(dto.getPassword());
+        entity.setRol(dto.getRol());
+        entity.setTelefono(dto.getTelefono());
+        return entity;
+    }
 
-    Usuario toEntity(UsuarioDTO usuarioDTO);
-
-    List<UsuarioDTO> toDTOList(List<Usuario> usuarios);
+    public List<UsuarioDTO> toDTOList(List<Usuario> entities) {
+        if (entities == null) return List.of();
+        return entities.stream().map(this::toDTO).collect(Collectors.toList());
+    }
 }

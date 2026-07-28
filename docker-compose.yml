@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
 
   mysql:
@@ -50,6 +48,12 @@ services:
       - "8761:8761"
     networks:
       - fitness-net
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8761/actuator/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
 
   config-server:
     build:
@@ -60,9 +64,17 @@ services:
     ports:
       - "8888:8888"
     environment:
+      SPRING_PROFILES_ACTIVE: native
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
     depends_on:
-      - eureka-server
+      eureka-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8888/actuator/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
     networks:
       - fitness-net
 
@@ -75,18 +87,22 @@ services:
     ports:
       - "8081:8081"
     environment:
+      SPRING_APPLICATION_NAME: usuario-service
       SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/usuario_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:8180/realms/fitness-realm
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/usuario_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: fitness_user
+      SPRING_DATASOURCE_PASSWORD: fitness_pass
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.cj.jdbc.Driver
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/fitness-realm/protocol/openid-connect/certs
     depends_on:
       mysql:
         condition: service_healthy
       config-server:
-        condition: service_started
+        condition: service_healthy
       eureka-server:
-        condition: service_started
+        condition: service_healthy
     networks:
       - fitness-net
 
@@ -99,16 +115,22 @@ services:
     ports:
       - "8084:8084"
     environment:
+      SPRING_APPLICATION_NAME: membresia-service
       SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/membresia_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:8180/realms/fitness-realm
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/membresia_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: fitness_user
+      SPRING_DATASOURCE_PASSWORD: fitness_pass
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.cj.jdbc.Driver
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/fitness-realm/protocol/openid-connect/certs
     depends_on:
       mysql:
         condition: service_healthy
-      usuario-service:
-        condition: service_started
+      config-server:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
     networks:
       - fitness-net
 
@@ -121,16 +143,22 @@ services:
     ports:
       - "8082:8082"
     environment:
+      SPRING_APPLICATION_NAME: rutina-service
       SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/rutina_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:8180/realms/fitness-realm
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/rutina_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: fitness_user
+      SPRING_DATASOURCE_PASSWORD: fitness_pass
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.cj.jdbc.Driver
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/fitness-realm/protocol/openid-connect/certs
     depends_on:
       mysql:
         condition: service_healthy
-      usuario-service:
-        condition: service_started
+      config-server:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
     networks:
       - fitness-net
 
@@ -143,16 +171,22 @@ services:
     ports:
       - "8085:8085"
     environment:
+      SPRING_APPLICATION_NAME: ejercicio-rutina-service
       SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ejercicio_rutina_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:8180/realms/fitness-realm
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ejercicio_rutina_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: fitness_user
+      SPRING_DATASOURCE_PASSWORD: fitness_pass
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.cj.jdbc.Driver
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/fitness-realm/protocol/openid-connect/certs
     depends_on:
       mysql:
         condition: service_healthy
-      rutina-service:
-        condition: service_started
+      config-server:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
     networks:
       - fitness-net
 
@@ -165,16 +199,22 @@ services:
     ports:
       - "8083:8083"
     environment:
+      SPRING_APPLICATION_NAME: progreso-service
       SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/progreso_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:8180/realms/fitness-realm
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/progreso_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: fitness_user
+      SPRING_DATASOURCE_PASSWORD: fitness_pass
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.cj.jdbc.Driver
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/fitness-realm/protocol/openid-connect/certs
     depends_on:
       mysql:
         condition: service_healthy
-      usuario-service:
-        condition: service_started
+      config-server:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
     networks:
       - fitness-net
 
@@ -187,16 +227,22 @@ services:
     ports:
       - "8086:8086"
     environment:
+      SPRING_APPLICATION_NAME: nutricion-service
       SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/nutricion_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:8180/realms/fitness-realm
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/nutricion_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: fitness_user
+      SPRING_DATASOURCE_PASSWORD: fitness_pass
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.cj.jdbc.Driver
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/fitness-realm/protocol/openid-connect/certs
     depends_on:
       mysql:
         condition: service_healthy
-      usuario-service:
-        condition: service_started
+      config-server:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
     networks:
       - fitness-net
 
@@ -209,16 +255,15 @@ services:
     ports:
       - "8080:8080"
     environment:
+      SPRING_APPLICATION_NAME: api-gateway
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:8180/realms/fitness-realm
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/fitness-realm/protocol/openid-connect/certs
     depends_on:
-      - usuario-service
-      - membresia-service
-      - rutina-service
-      - ejercicio-rutina-service
-      - progreso-service
-      - nutricion-service
+      config-server:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
     networks:
       - fitness-net
 
