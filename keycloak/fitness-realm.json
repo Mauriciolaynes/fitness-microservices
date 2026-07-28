@@ -24,6 +24,8 @@
   "users": [
     {
       "username": "admin",
+      "firstName": "Admin",
+      "lastName": "Fitness",
       "enabled": true,
       "emailVerified": true,
       "email": "admin@fitness.com",
@@ -35,6 +37,8 @@
     },
     {
       "username": "usuario1",
+      "firstName": "Usuario",
+      "lastName": "Fitness",
       "enabled": true,
       "emailVerified": true,
       "email": "usuario1@fitness.com",
