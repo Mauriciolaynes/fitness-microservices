@@ -1,7 +1,7 @@
 # Fitness Microservices
 
 Conversión a arquitectura de microservicios de la API (usuario, membresía, rutina,
-ejercicio_rutina, progreso) usando Spring Boot 3 + Spring Cloud 2023.
+ejercicio-rutina, progreso y nutrición) usando Spring Boot 3 + Spring Cloud 2023.
 
 ## Arquitectura
 
@@ -10,11 +10,14 @@ ejercicio_rutina, progreso) usando Spring Boot 3 + Spring Cloud 2023.
 | `eureka-server` | 8761 | Service Discovery (Netflix Eureka) |
 | `config-server` | 8888 | Configuración centralizada (perfil `native`, lee `config-repo/`) |
 | `api-gateway` | 8080 | Puerta de entrada única, enrutamiento + validación JWT (Keycloak) |
-| `usuario-service` | 8081 | Entidades `usuario` y `membresia` |
-| `rutina-service` | 8082 | Entidades `rutina` y `ejercicio_rutina` |
+| `usuario-service` | 8081 | Entidad `usuario` |
+| `membresia-service` | 8084 | Entidad `membresia` |
+| `rutina-service` | 8082 | Entidad `rutina` |
+| `ejercicio-rutina-service` | 8085 | Entidad `ejercicio_rutina` |
 | `progreso-service` | 8083 | Entidad `progreso` |
+| `nutricion-service` | 8086 | Entidad `nutricion` |
 | `keycloak` | 8180 | Servidor OAuth2 / OpenID Connect |
-| `mysql` | 3306 | Una base de datos por servicio: `usuario_db`, `rutina_db`, `progreso_db` |
+| `mysql` | 3306 | Una base de datos por servicio: `usuario_db`, `membresia_db`, `rutina_db`, `ejercicio_rutina_db`, `progreso_db`, `nutricion_db` |
 
 ### Comunicación entre microservicios (requisito #7)
 
@@ -39,10 +42,15 @@ Cada servicio tiene su capa `mapper/` (`UsuarioMapper`, `MembresiaMapper`, `Ruti
 
 ### Swagger / OpenAPI
 
-Cada servicio expone `springdoc-openapi`:
-- `http://localhost:8081/swagger-ui.html` (usuario-service)
-- `http://localhost:8082/swagger-ui.html` (rutina-service)
-- `http://localhost:8083/swagger-ui.html` (progreso-service)
+Cada servicio expone su propio contrato OpenAPI independiente con `springdoc-openapi`:
+- `usuario-service`: `http://localhost:8081/swagger-ui.html` y `http://localhost:8081/v3/api-docs`
+- `membresia-service`: `http://localhost:8084/swagger-ui.html` y `http://localhost:8084/v3/api-docs`
+- `rutina-service`: `http://localhost:8082/swagger-ui.html` y `http://localhost:8082/v3/api-docs`
+- `ejercicio-rutina-service`: `http://localhost:8085/swagger-ui.html` y `http://localhost:8085/v3/api-docs`
+- `progreso-service`: `http://localhost:8083/swagger-ui.html` y `http://localhost:8083/v3/api-docs`
+- `nutricion-service`: `http://localhost:8086/swagger-ui.html` y `http://localhost:8086/v3/api-docs`
+
+Este contrato documenta los endpoints propios de cada microservicio y permite consumirlos de forma independiente.
 
 ---
 
@@ -84,9 +92,12 @@ Para bajar todo: `docker compose down` (agrega `-v` si quieres borrar también l
    1. `EurekaServerApplication`
    2. `ConfigServerApplication`
    3. `UsuarioServiceApplication`
-   4. `RutinaServiceApplication`
-   5. `ProgresoServiceApplication`
-   6. `ApiGatewayApplication`
+   4. `MembresiaServiceApplication`
+   5. `RutinaServiceApplication`
+   6. `EjercicioRutinaServiceApplication`
+   7. `ProgresoServiceApplication`
+   8. `NutricionServiceApplication`
+   9. `ApiGatewayApplication`
 5. Cada servicio toma su configuración de `config-repo/<servicio>.yml` a través del Config Server
    (`spring.config.import: optional:configserver:http://localhost:8888`).
 
@@ -119,8 +130,11 @@ fitness-microservices/
 ├── config-server/
 ├── api-gateway/
 ├── usuario-service/
+├── membresia-service/
 ├── rutina-service/
-└── progreso-service/
+├── ejercicio-rutina-service/
+├── progreso-service/
+└── nutricion-service/
 ```
 
 ## Notas importantes
