@@ -1,353 +1,1492 @@
 {
-	"info": {
-		"_postman_id": "e2ba8475-7b56-4b8c-986c-dfc588523c9a",
-		"name": "Fitness Microservices System (6 Services)",
-		"description": "Collection for testing the complete Fitness Microservices System with 6 business services and Keycloak OAuth2 security through the API Gateway.\n\n**ORDEN DE EJECUCIÓN:**\n1. Get Token → guarda jwt_token automáticamente\n2. Crear Usuario → devuelve idUsuario (usar en siguientes requests)\n3. Crear Membresía → requiere idUsuario válido\n4. Crear Rutina → requiere idUsuario válido\n5. Asignar Ejercicio → requiere idRutina válido\n6. Registrar Progreso → requiere idUsuario válido\n7. Registrar Nutrición → requiere idUsuario válido",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-	},
-	"item": [
-		{
-			"name": "1. Keycloak - Get Token",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"var jsonData = pm.response.json();",
-							"if (jsonData.access_token) {",
-							"    pm.collectionVariables.set(\"jwt_token\", jsonData.access_token);",
-							"    console.log(\"✅ JWT Token guardado correctamente.\");",
-							"} else {",
-							"    console.log(\"❌ No se obtuvo token. Verifica credenciales.\");",
-							"}"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "urlencoded",
-					"urlencoded": [
-						{
-							"key": "client_id",
-							"value": "fitness-client",
-							"type": "text"
-						},
-						{
-							"key": "client_secret",
-							"value": "fitness-client-secret",
-							"type": "text"
-						},
-						{
-							"key": "grant_type",
-							"value": "password",
-							"type": "text"
-						},
-						{
-							"key": "username",
-							"value": "admin",
-							"type": "text"
-						},
-						{
-							"key": "password",
-							"value": "admin123",
-							"type": "text"
-						}
-					]
-				},
-				"url": {
-					"raw": "http://localhost:8180/realms/fitness-realm/protocol/openid-connect/token",
-					"protocol": "http",
-					"host": ["localhost"],
-					"port": "8180",
-					"path": ["realms", "fitness-realm", "protocol", "openid-connect", "token"]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "2. Usuario - Crear Usuario",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"var jsonData = pm.response.json();",
-							"if (jsonData.idUsuario) {",
-							"    pm.collectionVariables.set(\"usuario_id\", jsonData.idUsuario);",
-							"    console.log(\"✅ Usuario creado con id: \" + jsonData.idUsuario);",
-							"}"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [{"key": "token", "value": "{{jwt_token}}", "type": "string"}]
-				},
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"nombres\": \"Carlos\",\n  \"apellidos\": \"Laynes\",\n  \"correo\": \"carlos.laynes@mail.com\",\n  \"dni\": \"12345678\",\n  \"password\": \"pass1234\",\n  \"telefono\": \"987654321\",\n  \"rol\": \"USER\"\n}",
-					"options": {"raw": {"language": "json"}}
-				},
-				"url": {
-					"raw": "http://localhost:8080/api/usuarios",
-					"protocol": "http", "host": ["localhost"], "port": "8080",
-					"path": ["api", "usuarios"]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "2b. Usuario - Listar Usuarios",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [{"key": "token", "value": "{{jwt_token}}", "type": "string"}]
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8080/api/usuarios",
-					"protocol": "http", "host": ["localhost"], "port": "8080",
-					"path": ["api", "usuarios"]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "3. Membresia - Crear Membresia",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [{"key": "token", "value": "{{jwt_token}}", "type": "string"}]
-				},
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"idUsuario\": {{usuario_id}},\n  \"plan\": \"Premium Anual\",\n  \"costo\": 350.00,\n  \"inicio\": \"2026-07-27\",\n  \"fin\": \"2027-07-27\",\n  \"estado\": \"Activo\"\n}",
-					"options": {"raw": {"language": "json"}}
-				},
-				"url": {
-					"raw": "http://localhost:8080/api/membresias",
-					"protocol": "http", "host": ["localhost"], "port": "8080",
-					"path": ["api", "membresias"]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "3b. Membresia - Listar Membresias",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [{"key": "token", "value": "{{jwt_token}}", "type": "string"}]
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8080/api/membresias",
-					"protocol": "http", "host": ["localhost"], "port": "8080",
-					"path": ["api", "membresias"]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "4. Rutina - Crear Rutina",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"var jsonData = pm.response.json();",
-							"if (jsonData.idRutina) {",
-							"    pm.collectionVariables.set(\"rutina_id\", jsonData.idRutina);",
-							"    console.log(\"✅ Rutina creada con id: \" + jsonData.idRutina);",
-							"}"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [{"key": "token", "value": "{{jwt_token}}", "type": "string"}]
-				},
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"nombreRutina\": \"Rutina Hipertrofia Pecho/Triceps\",\n  \"idUsuario\": {{usuario_id}}\n}",
-					"options": {"raw": {"language": "json"}}
-				},
-				"url": {
-					"raw": "http://localhost:8080/api/rutinas",
-					"protocol": "http", "host": ["localhost"], "port": "8080",
-					"path": ["api", "rutinas"]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "4b. Rutina - Listar Rutinas",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [{"key": "token", "value": "{{jwt_token}}", "type": "string"}]
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8080/api/rutinas",
-					"protocol": "http", "host": ["localhost"], "port": "8080",
-					"path": ["api", "rutinas"]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "5. Ejercicio - Asignar Ejercicio a Rutina",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [{"key": "token", "value": "{{jwt_token}}", "type": "string"}]
-				},
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"nombre\": \"Press de Banca Plano\",\n  \"series\": 4,\n  \"idRutina\": {{rutina_id}}\n}",
-					"options": {"raw": {"language": "json"}}
-				},
-				"url": {
-					"raw": "http://localhost:8080/api/ejercicios-rutina",
-					"protocol": "http", "host": ["localhost"], "port": "8080",
-					"path": ["api", "ejercicios-rutina"]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "5b. Ejercicio - Listar Ejercicios",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [{"key": "token", "value": "{{jwt_token}}", "type": "string"}]
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8080/api/ejercicios-rutina",
-					"protocol": "http", "host": ["localhost"], "port": "8080",
-					"path": ["api", "ejercicios-rutina"]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "6. Progreso - Registrar Progreso",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [{"key": "token", "value": "{{jwt_token}}", "type": "string"}]
-				},
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"idUsuario\": {{usuario_id}},\n  \"fechaRegistro\": \"2026-07-27\",\n  \"peso\": 78.50,\n  \"porcentajeGrasa\": 15.4,\n  \"porcentajeMusculo\": 42.1\n}",
-					"options": {"raw": {"language": "json"}}
-				},
-				"url": {
-					"raw": "http://localhost:8080/api/progresos",
-					"protocol": "http", "host": ["localhost"], "port": "8080",
-					"path": ["api", "progresos"]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "6b. Progreso - Listar Progresos",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [{"key": "token", "value": "{{jwt_token}}", "type": "string"}]
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8080/api/progresos",
-					"protocol": "http", "host": ["localhost"], "port": "8080",
-					"path": ["api", "progresos"]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "7. Nutricion - Registrar Plan Nutricion",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [{"key": "token", "value": "{{jwt_token}}", "type": "string"}]
-				},
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"planDetalle\": \"Plan Proteico de Volumen\",\n  \"caloriasDiarias\": 2900,\n  \"objetivo\": \"Aumento de masa muscular\",\n  \"idUsuario\": {{usuario_id}}\n}",
-					"options": {"raw": {"language": "json"}}
-				},
-				"url": {
-					"raw": "http://localhost:8080/api/nutriciones",
-					"protocol": "http", "host": ["localhost"], "port": "8080",
-					"path": ["api", "nutriciones"]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "7b. Nutricion - Listar Planes",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [{"key": "token", "value": "{{jwt_token}}", "type": "string"}]
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8080/api/nutriciones",
-					"protocol": "http", "host": ["localhost"], "port": "8080",
-					"path": ["api", "nutriciones"]
-				}
-			},
-			"response": []
-		}
-	],
-	"variable": [
-		{
-			"key": "jwt_token",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "usuario_id",
-			"value": "1",
-			"type": "string"
-		},
-		{
-			"key": "rutina_id",
-			"value": "1",
-			"type": "string"
-		}
-	]
+  "info": {
+    "_postman_id": "e2ba8475-7b56-4b8c-986c-dfc588523c9a",
+    "name": "Fitness Microservices System (6 Services)",
+    "description": "Fitness microservices collection grouped by folders: Authentication, Usuario, Membresia, Rutina, Ejercicio Rutina, Progreso, Nutricion.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "1. Keycloak - Get Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.access_token) {",
+                  "    pm.collectionVariables.set(\"jwt_token\", jsonData.access_token);",
+                  "    console.log(\"TOKEN saved.\");",
+                  "} else {",
+                  "    console.log(\"No token returned.\");",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "client_id",
+                  "value": "fitness-client",
+                  "type": "text"
+                },
+                {
+                  "key": "client_secret",
+                  "value": "fitness-client-secret",
+                  "type": "text"
+                },
+                {
+                  "key": "grant_type",
+                  "value": "password",
+                  "type": "text"
+                },
+                {
+                  "key": "username",
+                  "value": "admin",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "admin123",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8180/realms/fitness-realm/protocol/openid-connect/token",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8180",
+              "path": [
+                "realms",
+                "fitness-realm",
+                "protocol",
+                "openid-connect",
+                "token"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Usuario",
+      "item": [
+        {
+          "name": "2. Usuario - Crear Usuario",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.idUsuario) {",
+                  "    pm.collectionVariables.set(\"usuario_id\", jsonData.idUsuario);",
+                  "    console.log(\"usuario_id set.\");",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombres\": \"Carlos\",\n  \"apellidos\": \"Laynes\",\n  \"correo\": \"carlos.laynes@mail.com\",\n  \"dni\": \"12345678\",\n  \"password\": \"pass1234\",\n  \"telefono\": \"987654321\",\n  \"rol\": \"USER\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/usuarios",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "usuarios"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2b. Usuario - Listar Usuarios",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/usuarios",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "usuarios"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2c. Usuario - Obtener Usuario por Id",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/usuarios/{{usuario_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "usuarios",
+                "{{usuario_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2d. Usuario - Actualizar Usuario",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombres\": \"Carlos Alberto\",\n  \"apellidos\": \"Laynes Diaz\",\n  \"correo\": \"carlos.laynes@mail.com\",\n  \"dni\": \"12345678\",\n  \"password\": \"pass1234\",\n  \"telefono\": \"987654321\",\n  \"rol\": \"USER\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/usuarios/{{usuario_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "usuarios",
+                "{{usuario_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2e. Usuario - Eliminar Usuario",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/usuarios/{{usuario_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "usuarios",
+                "{{usuario_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2f. Usuario - Verificar existencia",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/usuarios/{{usuario_id}}/existe",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "usuarios",
+                "{{usuario_id}}",
+                "existe"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Membresia",
+      "item": [
+        {
+          "name": "3. Membresia - Crear Membresia",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.id) {",
+                  "    pm.collectionVariables.set(\"membresia_id\", jsonData.id);",
+                  "    console.log(\"membresia_id set.\");",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idUsuario\": {{usuario_id}},\n  \"plan\": \"Premium Anual\",\n  \"costo\": 350.00,\n  \"inicio\": \"2026-07-27\",\n  \"fin\": \"2027-07-27\",\n  \"estado\": \"Activo\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/membresias",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "membresias"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3b. Membresia - Listar Membresias",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/membresias",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "membresias"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3c. Membresia - Obtener Membresia por Id",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/membresias/{{membresia_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "membresias",
+                "{{membresia_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3d. Membresia - Listar por Usuario",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/membresias/usuario/{{usuario_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "membresias",
+                "usuario",
+                "{{usuario_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3e. Membresia - Actualizar Membresia",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idUsuario\": {{usuario_id}},\n  \"plan\": \"Premium Anual Actualizado\",\n  \"costo\": 360.00,\n  \"inicio\": \"2026-07-27\",\n  \"fin\": \"2027-07-27\",\n  \"estado\": \"Activo\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/membresias/{{membresia_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "membresias",
+                "{{membresia_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3f. Membresia - Eliminar Membresia",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/membresias/{{membresia_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "membresias",
+                "{{membresia_id}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Rutina",
+      "item": [
+        {
+          "name": "4. Rutina - Crear Rutina",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.idRutina) {",
+                  "    pm.collectionVariables.set(\"rutina_id\", jsonData.idRutina);",
+                  "    console.log(\"rutina_id set.\");",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombreRutina\": \"Rutina Hipertrofia Pecho/Triceps\",\n  \"idUsuario\": {{usuario_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/rutinas",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "rutinas"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4b. Rutina - Listar Rutinas",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/rutinas",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "rutinas"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4c. Rutina - Obtener Rutina por Id",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/rutinas/{{rutina_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "rutinas",
+                "{{rutina_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4d. Rutina - Listar por Usuario",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/rutinas/usuario/{{usuario_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "rutinas",
+                "usuario",
+                "{{usuario_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4e. Rutina - Verificar existencia",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/rutinas/{{rutina_id}}/existe",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "rutinas",
+                "{{rutina_id}}",
+                "existe"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4f. Rutina - Actualizar Rutina",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombreRutina\": \"Rutina Chest & Triceps Actualizada\",\n  \"idUsuario\": {{usuario_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/rutinas/{{rutina_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "rutinas",
+                "{{rutina_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4g. Rutina - Eliminar Rutina",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/rutinas/{{rutina_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "rutinas",
+                "{{rutina_id}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Ejercicio Rutina",
+      "item": [
+        {
+          "name": "5. Ejercicio - Crear Ejercicio en Rutina",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.id) {",
+                  "    pm.collectionVariables.set(\"ejercicio_id\", jsonData.id);",
+                  "    console.log(\"ejercicio_id set.\");",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Press de Banca Plano\",\n  \"series\": 4,\n  \"idRutina\": {{rutina_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/ejercicios-rutina",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "ejercicios-rutina"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5b. Ejercicio - Listar Ejercicios",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/ejercicios-rutina",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "ejercicios-rutina"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5c. Ejercicio - Obtener Ejercicio por Id",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/ejercicios-rutina/{{ejercicio_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "ejercicios-rutina",
+                "{{ejercicio_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5d. Ejercicio - Listar por Rutina",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/ejercicios-rutina/rutina/{{rutina_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "ejercicios-rutina",
+                "rutina",
+                "{{rutina_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5e. Ejercicio - Actualizar Ejercicio",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Press de Banca Inclinado\",\n  \"series\": 5,\n  \"idRutina\": {{rutina_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/ejercicios-rutina/{{ejercicio_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "ejercicios-rutina",
+                "{{ejercicio_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5f. Ejercicio - Eliminar Ejercicio",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/ejercicios-rutina/{{ejercicio_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "ejercicios-rutina",
+                "{{ejercicio_id}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Progreso",
+      "item": [
+        {
+          "name": "6. Progreso - Registrar Progreso",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.idProgreso) {",
+                  "    pm.collectionVariables.set(\"progreso_id\", jsonData.idProgreso);",
+                  "    console.log(\"progreso_id set.\");",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idUsuario\": {{usuario_id}},\n  \"fechaRegistro\": \"2026-07-27\",\n  \"peso\": 78.50\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/progresos",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "progresos"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6b. Progreso - Listar Progresos",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/progresos",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "progresos"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6c. Progreso - Obtener Progreso por Id",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/progresos/{{progreso_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "progresos",
+                "{{progreso_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6d. Progreso - Listar por Usuario",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/progresos/usuario/{{usuario_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "progresos",
+                "usuario",
+                "{{usuario_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6e. Progreso - Actualizar Progreso",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idUsuario\": {{usuario_id}},\n  \"fechaRegistro\": \"2026-07-28\",\n  \"peso\": 79.00\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/progresos/{{progreso_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "progresos",
+                "{{progreso_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6f. Progreso - Eliminar Progreso",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/progresos/{{progreso_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "progresos",
+                "{{progreso_id}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Nutricion",
+      "item": [
+        {
+          "name": "7. Nutricion - Registrar Plan Nutricion",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.id) {",
+                  "    pm.collectionVariables.set(\"nutricion_id\", jsonData.id);",
+                  "    console.log(\"nutricion_id set.\");",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"planDetalle\": \"Plan Proteico de Volumen\",\n  \"caloriasDiarias\": 2900,\n  \"objetivo\": \"Aumento de masa muscular\",\n  \"idUsuario\": {{usuario_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/nutriciones",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "nutriciones"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7b. Nutricion - Listar Planes",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/nutriciones",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "nutriciones"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7c. Nutricion - Obtener Plan por Id",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/nutriciones/{{nutricion_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "nutriciones",
+                "{{nutricion_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7d. Nutricion - Listar por Usuario",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/nutriciones/usuario/{{usuario_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "nutriciones",
+                "usuario",
+                "{{usuario_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7e. Nutricion - Actualizar Plan Nutricion",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"planDetalle\": \"Plan Proteico Actualizado\",\n  \"caloriasDiarias\": 3000,\n  \"objetivo\": \"Definicion muscular\",\n  \"idUsuario\": {{usuario_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/nutriciones/{{nutricion_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "nutriciones",
+                "{{nutricion_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7f. Nutricion - Eliminar Plan Nutricion",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/nutriciones/{{nutricion_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "nutriciones",
+                "{{nutricion_id}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "usuario_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "membresia_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "rutina_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "ejercicio_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "progreso_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "nutricion_id",
+      "value": "1",
+      "type": "string"
+    }
+  ]
 }
